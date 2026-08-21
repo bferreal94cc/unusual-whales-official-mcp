@@ -8,6 +8,7 @@ cd unusual-whales-official-mcp
 npm install
 
 export UW_API_KEY="your_api_key_here"
+# ...or keep it in a gitignored file instead: cp .env.example .env && edit UW_API_KEY
 
 npm run build
 npm test

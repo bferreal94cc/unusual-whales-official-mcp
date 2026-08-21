@@ -128,6 +128,16 @@ claude mcp add unusualwhales -e UW_API_KEY=YOUR_KEY -- npx -y @unusualwhales/mcp
 }
 ```
 
+**Prefer to keep the key out of your client config?** Put it in a `.env` file next to the server instead — the file is gitignored, so the secret never reaches the repo:
+
+```bash
+cp .env.example .env
+# edit .env and set UW_API_KEY=your_key
+chmod 600 .env
+```
+
+The server reads `.env` from the current working directory, or from its own package root, at startup. Anything already set in the real environment wins, so a client config's `env` block still overrides the file. Point `UW_ENV_FILE` at another path to load the key from somewhere else.
+
 Config file locations:
 - **Claude Desktop (macOS)**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Claude Desktop (Windows)**: `%APPDATA%\Claude\claude_desktop_config.json`
@@ -291,6 +301,7 @@ All optional. The defaults work for most users.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `UW_API_KEY` | *required* | Your Unusual Whales API key |
+| `UW_ENV_FILE` | `.env` | Path to the env file holding your key (cwd, then package root, by default) |
 | `UW_RATE_LIMIT_PER_MINUTE` | `120` | Max requests per minute |
 | `UW_MAX_RETRIES` | `3` | Retry attempts for failed requests |
 | `UW_CIRCUIT_BREAKER_THRESHOLD` | `5` | Failures before circuit opens |

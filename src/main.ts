@@ -8,6 +8,9 @@
  * and more.
  */
 
+// Side-effect import: must run before any module reads process.env.
+import { envFileLoaded } from "./env.js"
+
 import { createRequire } from "module"
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
@@ -166,7 +169,12 @@ for (const prompt of prompts) {
 async function boot(): Promise<void> {
   const transport = new StdioServerTransport()
   await server.connect(transport)
-  log.info("Server started", { name: SERVER_NAME, version: SERVER_VERSION })
+  log.info("Server started", {
+    name: SERVER_NAME,
+    version: SERVER_VERSION,
+    envFile: envFileLoaded ?? "none",
+    apiKey: process.env.UW_API_KEY ? "set" : "missing",
+  })
 }
 
 async function shutdown(): Promise<void> {
