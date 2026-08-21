@@ -1,0 +1,13 @@
+{
+  "name": "periscope-board",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local SPY/XSP options positioning board served from the Unusual Whales MCP server",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs",
+    "check": "node --check server.mjs && node --check src/uw.mjs && node --check src/aggregate.mjs && node --check src/env.mjs && node --check public/app.js"
+  },
+  "engines": { "node": ">=20.0.0" }
+}
