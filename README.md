@@ -297,6 +297,8 @@ All optional. The defaults work for most users.
 | `UW_CIRCUIT_BREAKER_RESET_TIMEOUT` | `30000` | Ms before retrying after circuit opens |
 | `LOG_LEVEL` | `info` | Logging verbosity (`debug`, `info`, `warn`, `error`) |
 
+Copy [`.env.example`](.env.example) to `.env` to get started. See [docs/secrets.md](docs/secrets.md) for where the API key belongs locally, in an MCP client, and in CI.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
