@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Periscope Positioning Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔭</text></svg>">
+</head>
+<body>
+
+<div class="statusbar">
+  <span class="dot wait" id="statusDot"></span>
+  <span id="statusText">connecting…</span>
+  <span class="grow"></span>
+  <span id="statusMeta"></span>
+  <button type="button" id="refreshBtn">Refresh</button>
+</div>
+
+<div class="wrap">
+  <header class="mast">
+    <p class="eyebrow" id="eyebrow">Periscope</p>
+    <h1 id="headline">Where the positioning sits</h1>
+    <p class="dek">Options flow, gamma exposure and dark-pool prints, pulled live from the Unusual Whales MCP server. Three completed sessions behind, five expiries ahead. Gamma is kept on its own board — it describes dealer inventory, not order flow, and the two should not be read on the same axis.</p>
+    <dl class="tiles" id="tiles"></dl>
+  </header>
+
+  <div id="boot" class="boot">
+    <h2>Loading the board</h2>
+    <p>Pulling three sessions of flow, gamma and prints. First load takes a few seconds.</p>
+  </div>
+
+  <main id="board" hidden>
+    <section id="flow">
+      <div class="sec-head"><span class="sec-mark">Flow</span><h2>Options flow</h2></div>
+      <p class="sec-note">Every premium figure below is aggregated from Unusual Whales strike-level flow, so it counts the whole tape rather than a sample. Ask-side minus bid-side premium gives the net — positive means the tape was lifting offers.</p>
+      <h3>Sessions behind</h3>
+      <p class="h3-note">Whole-session totals, all expiries · source: flow-per-strike</p>
+      <div class="tbl-wrap"><table id="tblDaily"></table></div>
+      <h3>Expiries ahead</h3>
+      <p class="h3-note">Latest session flow, broken out by expiry · IV and implied move from the term structure · max pain from open interest</p>
+      <div class="tbl-wrap"><table id="tblForward"></table></div>
+      <h3>Block-size flow into those expiries</h3>
+      <p class="h3-note">Single trades above the premium floor, walked page by page through each session, then grouped by expiry</p>
+      <div class="tbl-wrap"><table id="tblBlocks"></table></div>
+      <h3>Largest single trades</h3>
+      <p class="h3-note">Ranked by premium across the sessions on the board</p>
+      <div class="tbl-wrap"><table id="tblTop"></table></div>
+    </section>
+
+    <section id="tide">
+      <div class="sec-head"><span class="sec-mark">Tide</span><h2>Market tide</h2></div>
+      <p class="sec-note">Tide is cumulative net premium through the session — every trade lifted at the ask adds, every trade hit on the bid subtracts. The curve's shape matters more than its endpoint: a line that rolls over mid-session says buyers stopped paying up.</p>
+      <h3>Where each session closed</h3>
+      <p class="h3-note">Cumulative net premium at the bell · the lead ETF beside the whole-market tide</p>
+      <div class="tbl-wrap"><table id="tblTide"></table></div>
+      <figure style="margin-top:22px">
+        <div class="fig-head">
+          <div><figcaption id="tideCap">Tide, intraday</figcaption>
+          <p class="fig-sub">Cumulative net premium and the underlying, five-minute steps</p></div>
+          <div class="toggle" role="group" aria-label="Session" id="tideToggle"></div>
+        </div>
+        <div id="tideChart" class="skeleton"></div>
+        <div class="legend">
+          <span><i style="background:var(--pos)"></i>Net call premium</span>
+          <span><i style="background:var(--neg)"></i>Net put premium</span>
+          <span><i style="background:var(--brass)"></i>Underlying price</span>
+        </div>
+      </figure>
+    </section>
+
+    <section id="gex">
+      <div class="sec-head"><span class="sec-mark">Gamma</span><h2>Gamma exposure</h2></div>
+      <p class="sec-note">Kept separate from flow on purpose. Flow is what traded; gamma exposure is the inventory dealers are left holding, and it predicts how they hedge. Negative net gamma means hedging amplifies moves rather than damping them. Blue is positive gamma throughout this board, red negative — colour never means anything else here.</p>
+      <h3>By expiry, across the sessions</h3>
+      <p class="h3-note">Net gamma = call GEX + put GEX · net delta, charm and vanna are the same sum for those greeks</p>
+      <div class="tbl-wrap"><table id="tblGex"></table></div>
+      <div class="fig-head" style="margin:30px 0 12px">
+        <div><h3 style="margin:0">Gamma charts</h3>
+        <p class="h3-note" style="margin:2px 0 0">Strike profile, session history and the expiry ladder</p></div>
+        <div class="toggle" role="group" aria-label="Ticker" id="gexToggle"></div>
+      </div>
+      <figure>
+        <figcaption id="strikeCap">Net gamma by strike</figcaption>
+        <p class="fig-sub">Latest session, strikes within ±3% of spot. Bars run right for positive gamma, left for negative.</p>
+        <div id="strikeChart" class="skeleton"></div>
+        <div class="legend">
+          <span><i style="background:var(--pos)"></i>Positive net gamma</span>
+          <span><i style="background:var(--neg)"></i>Negative net gamma</span>
+          <span><i style="background:var(--brass)"></i>Spot</span>
+        </div>
+      </figure>
+      <div class="chart-grid two" style="margin-top:18px">
+        <figure>
+          <figcaption id="histCap">Net gamma by session</figcaption>
+          <p class="fig-sub">Last 22 sessions, whole-chain net gamma</p>
+          <div id="histChart" class="skeleton"></div>
+        </figure>
+        <figure>
+          <figcaption id="ladderCap">Expiry ladder</figcaption>
+          <p class="fig-sub">Net gamma in each forward expiry, one bar per session</p>
+          <div id="ladderChart" class="skeleton"></div>
+        </figure>
+      </div>
+    </section>
+
+    <section id="pool">
+      <div class="sec-head"><span class="sec-mark">Prints</span><h2>Dark pool</h2></div>
+      <p class="sec-note" id="poolNote"></p>
+      <h3>Sessions of size</h3>
+      <p class="h3-note">Prints ≥$5M notional · share of volume is those prints against the consolidated tape</p>
+      <div class="tbl-wrap"><table id="tblPoolDaily"></table></div>
+      <h3>Where the size printed</h3>
+      <p class="h3-note">Prints bucketed to the dollar, all sessions combined</p>
+      <div class="tbl-wrap"><table id="tblPoolLevels" style="min-width:520px"></table></div>
+      <h3>Largest prints</h3>
+      <p class="h3-note">Ranked by notional · NBBO at the time of execution</p>
+      <div class="tbl-wrap"><table id="tblPoolTop"></table></div>
+    </section>
+
+    <section class="notes">
+      <h2>How to read this, and what it is not</h2>
+      <dl id="notes"></dl>
+    </section>
+  </main>
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+<script src="/app.js"></script>
+</body>
+</html>
